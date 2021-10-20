@@ -8,7 +8,7 @@ def main():
     
     ## parameters
     root = "D:/nyc_taxi/ori_data"
-    chunk_size=2000000
+    chunk_size = 2000000
     batch_no=1
     init_year = '2009'
     file_names = ['2009_yellow_taxi.csv',
@@ -29,3 +29,6 @@ def main():
             chunk.to_csv(root+'chunk_data/'+year+'/chunk'+str(batch_no)+'.csv',index=False)
             batch_no+=1
         print(file + 'Done!')
+
+if __name__ == "__main__":
+    main()
