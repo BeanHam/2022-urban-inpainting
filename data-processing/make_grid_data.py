@@ -163,6 +163,9 @@ def main():
             print('# of gridded records: {}'.format(len(gridded_data)))
             print('Total time: {}'.format(round((t1-t0)/60),4))
             print('-----------------------------')
-    
+
+            ## clear memory
+            del whole_data, gridded_data
+            
 if __name__ == "__main__":
     main()
