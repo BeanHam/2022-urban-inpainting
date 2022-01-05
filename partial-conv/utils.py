@@ -357,8 +357,9 @@ def loss_eval(model, criterion_m, dataset, parameters):
     device = parameters['device']
     epsilon = parameters['epsilon']
     model_loss_total = 0
+    iterations = 20
     
-    ## eval
+    ## modeling
     indices= np.random.randint(chunk_size-1, high=len(dataset), size=batch_size)
     mask, gt= zip(*[dataset[i] for i in indices])
     mask = torch.stack(mask).to(device)
@@ -372,7 +373,7 @@ def loss_eval(model, criterion_m, dataset, parameters):
                  relative_loss_weight*(loss_dict['relative_loss'])
     
     return (model_loss/batch_size).item()
-
+    
 def loss_eval_all(model, criterion_m, dataset, parameters):
     
     ## parameters
