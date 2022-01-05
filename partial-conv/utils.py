@@ -117,7 +117,7 @@ def train_l1(dataset_train, dataset_val, dataset_test_biased, dataset_test_rando
         model = PConvUNet().to(device)
         optimizer_m = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate_m)
         criterion_m = inpaintingtLoss().to(device)
-        scheduler_m = StepLR(optimizer_m, learning_rate_step, 0.8)
+        scheduler_m = StepLR(optimizer_m, learning_rate_step, 0.9)
         val_model_loss = []
         
         ## training iterations
@@ -142,7 +142,7 @@ def train_l1(dataset_train, dataset_val, dataset_test_biased, dataset_test_rando
             if (i + 1) % eval_iter == 0 or (i + 1) == max_iter:
                 ## evaluation mode
                 model.eval()
-                val_model_loss.append(loss_eval(model, criterion_m, dataset_val, parameters))
+                val_model_loss.append(loss_eval_all(model, criterion_m, dataset_val, parameters))
         
         ## validation            
         final_val_loss = np.mean(quantitative_eval(model, dataset_val, parameters)['hole_l1_output'])
@@ -206,7 +206,7 @@ def train_3d(dataset_train, dataset_val, dataset_test_biased, dataset_test_rando
         model = PConvUNet().to(device)
         optimizer_m = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate_m)
         criterion_m = inpaintingtLoss().to(device)
-        scheduler_m = StepLR(optimizer_m, learning_rate_step, 0.8)
+        scheduler_m = StepLR(optimizer_m, learning_rate_step, 0.9)
         val_model_loss = []
         
         ## training iterations
@@ -231,7 +231,7 @@ def train_3d(dataset_train, dataset_val, dataset_test_biased, dataset_test_rando
             if (i + 1) % eval_iter == 0 or (i + 1) == max_iter:
                 ## evaluation mode
                 model.eval()
-                val_model_loss.append(loss_eval(model, criterion_m, dataset_val, parameters))
+                val_model_loss.append(loss_eval_all(model, criterion_m, dataset_val, parameters))
         
         ## validation            
         final_val_loss = np.mean(quantitative_eval(model, dataset_val, parameters)['hole_l1_output'])
@@ -295,7 +295,7 @@ def train_relative(dataset_train, dataset_val, dataset_test_biased, dataset_test
         model = PConvUNet().to(device)
         optimizer_m = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate_m)
         criterion_m = inpaintingtLoss().to(device)
-        scheduler_m = StepLR(optimizer_m, learning_rate_step, 0.8)
+        scheduler_m = StepLR(optimizer_m, learning_rate_step, 0.9)
         val_model_loss = []
         
         ## training iterations
@@ -321,7 +321,7 @@ def train_relative(dataset_train, dataset_val, dataset_test_biased, dataset_test
             if (i + 1) % eval_iter == 0 or (i + 1) == max_iter:
                 ## evaluation mode
                 model.eval()
-                val_model_loss.append(loss_eval(model, criterion_m, dataset_val, parameters))
+                val_model_loss.append(loss_eval_all(model, criterion_m, dataset_val, parameters))
         
         ## validation            
         final_val_loss = np.mean(quantitative_eval(model, dataset_val, parameters)['hole_l1_output'])
@@ -357,11 +357,40 @@ def loss_eval(model, criterion_m, dataset, parameters):
     device = parameters['device']
     epsilon = parameters['epsilon']
     model_loss_total = 0
-    iterations = 20
     
     ## eval
-    for i in range(iterations):        
-        indices= np.random.randint(chunk_size-1, high=len(dataset), size=batch_size)
+    indices= np.random.randint(chunk_size-1, high=len(dataset), size=batch_size)
+    mask, gt= zip(*[dataset[i] for i in indices])
+    mask = torch.stack(mask).to(device)
+    gt = torch.stack(gt).to(device)
+    with torch.no_grad():
+        output, _ = model(gt, mask)
+    loss_dict = criterion_m(mask, output, gt, epsilon)
+    model_loss = hole_loss_weight*(loss_dict['l1_loss_current_hole'])+\
+                 valid_loss_weight*(loss_dict['l1_loss_current_valid'])+\
+                 prev_hour_loss_weight*(loss_dict['l1_loss_prev_hours'])+\
+                 relative_loss_weight*(loss_dict['relative_loss'])
+    
+    return (model_loss/batch_size).item()
+
+def loss_eval_all(model, criterion_m, dataset, parameters):
+    
+    ## parameters
+    batch_size = parameters['batch_size']
+    chunk_size = parameters['chunk_size']
+    hole_loss_weight = parameters['hole_loss_weight']
+    valid_loss_weight = parameters['valid_loss_weight']
+    prev_hour_loss_weight = parameters['prev_hours_loss_weight']
+    relative_loss_weight = parameters['relative_loss_weight']
+    device = parameters['device']
+    epsilon = parameters['epsilon']
+    model_loss_total = 0
+    
+    ## iterate through
+    permutation = torch.randperm(len(dataset))
+    permutation = permutation[permutation>=chunk_size-1]
+    for i in range(0, len(permutation), batch_size):
+        indices = permutation[i:i+batch_size]
         mask, gt= zip(*[dataset[i] for i in indices])
         mask = torch.stack(mask).to(device)
         gt = torch.stack(gt).to(device)
@@ -373,7 +402,7 @@ def loss_eval(model, criterion_m, dataset, parameters):
                             prev_hour_loss_weight*(loss_dict['l1_loss_prev_hours'])+\
                             relative_loss_weight*(loss_dict['relative_loss'])
     
-    return (model_loss_total/iterations/batch_size).item()
+    return (model_loss_total/len(dataset)).item()
 
 def partial_mse(output_img, gt_img, mask):
     non_zero_gt_imags = gt_img[gt_img*(1-mask)!=0]
