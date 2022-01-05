@@ -34,7 +34,6 @@ def main():
     for chunk_size in chunk_sizes:
         
         parameters['chunk_size'] = chunk_size
-        parameters['max_iter'] = 20000 + 2500*(chunk_size-1)
         
         ## storage 
         all_results = []
