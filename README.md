@@ -8,4 +8,5 @@ We adapt partial convolution architectures proposed for image inpainting on the 
 ## Inpainting Results:
 - Top row: hourly NYC taxi trip counts
 - Bottom row: hourly NYC bikeshare counts
+
 ![alt text](https://github.com/BeanHam/urban-inpainting/blob/main/imgs/1-teaser.png)
