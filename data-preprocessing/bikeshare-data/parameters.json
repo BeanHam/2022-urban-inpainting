@@ -1,0 +1,8 @@
+{
+    "root": "D:/nyc_bikeshare/raw_data/", 
+    "lat_upper": 40.790512,
+    "lat_bottom": 40.6947195,
+    "long_left": -74.015339,
+    "long_right": -73.883107,
+    "image_size": 64
+}
