@@ -4,4 +4,7 @@ We adapt partial convolution architectures proposed for image inpainting on the 
 - use 3D partial convolutions to improve detection of transient events in the sparse regions
 - propose biased masking (as opposed to random masking) to encourage the model to attend to dense regions.
 
+
+===
+Inpainting Results:
 ![alt text](https://github.com/BeanHam/urban-inpainting/blob/main/imgs/1-teaser.png)
