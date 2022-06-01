@@ -10,3 +10,10 @@ We adapt partial convolution architectures proposed for image inpainting on the 
 - Bottom row: hourly NYC bikeshare counts
 
 ![alt text](https://github.com/BeanHam/urban-inpainting/blob/main/imgs/1-teaser.png)
+
+## Masking Techniques
+- Random Masking: randomly select a starting point from the image -> random-walk algorithm
+![alt text](https://github.com/BeanHam/urban-inpainting/blob/main/imgs/5-random-masking.png)
+
+- Biased Masking: detect the dense regions in the image -> randomly select a starting point from one of those dense regions -> random-walk algorithm
+![alt text](https://github.com/BeanHam/urban-inpainting/blob/main/imgs/6-biased-masking.png)
