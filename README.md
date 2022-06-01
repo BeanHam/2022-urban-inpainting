@@ -12,8 +12,8 @@ We adapt partial convolution architectures proposed for image inpainting on the 
 ![alt text](https://github.com/BeanHam/urban-inpainting/blob/main/imgs/1-teaser.png)
 
 ## Masking Techniques
-- Random Masking: randomly select a starting point from the image -> random-walk algorithm
+- Random Masking: randomly select a starting point from the image -> random-walk algorithm. Since the data distribution is highly imbalanced, it is likely that the mask will not cover any dense region.
 ![alt text](https://github.com/BeanHam/urban-inpainting/blob/main/imgs/5-random-masking.png)
 
-- Biased Masking: detect the dense regions in the image -> randomly select a starting point from one of those dense regions -> random-walk algorithm
+- Biased Masking: detect the dense regions in the image -> randomly select a starting point from one of those dense regions -> random-walk algorithm. Biased masking will ensure the coverage of dense region, while also covering the sparse region with random-walk.
 ![alt text](https://github.com/BeanHam/urban-inpainting/blob/main/imgs/6-biased-masking.png)
