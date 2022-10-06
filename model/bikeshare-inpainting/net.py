@@ -5,13 +5,26 @@ import torch.nn.functional as F
 from torchvision import models
 from torch.nn import Parameter
 
-
 ######################################################
 ############# Partial Convolution
 ######################################################
 
+## seed
+seed = 816
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+
 def weights_init(init_type='gaussian'):
+    
     def init_fun(m):
+        
+        ## seed
+        seed = 816
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        
         classname = m.__class__.__name__
         if (classname.find('Conv') == 0 or classname.find(
                 'Linear') == 0) and hasattr(m, 'weight'):
@@ -34,7 +47,14 @@ def weights_init(init_type='gaussian'):
     return init_fun
 
 class PartialConv(nn.Module):
+    
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True):
+        
+        ## seed
+        seed = 816
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
         
         super().__init__()
         self.input_conv = nn.Conv3d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias)
@@ -79,7 +99,6 @@ class PCBActiv(nn.Module):
         elif sample == 'down-3':
             self.conv = PartialConv(in_ch, out_ch, (1,3,3), (1,2,2), (0,1,1), bias=conv_bias)
         elif sample == 'down-3-3d':
-            #self.conv = PartialConv(in_ch, out_ch, (chunk_size, 3,3), (2,2,2), (1,1,1), bias=conv_bias)
             self.conv = PartialConv(in_ch, out_ch, (chunk_size, 3,3), (2,2,2), (2*((chunk_size-1)//4)+1,1,1), bias=conv_bias)
         else:
             self.conv = PartialConv(in_ch, out_ch, (1,3,3), (1,1,1), (0,1,1), bias=conv_bias)
@@ -108,19 +127,19 @@ class PConvUNet(nn.Module):
         self.chunk_size = chunk_size
         
         ## encoders
-        self.enc_1 = PCBActiv(input_channels, 64, sample='down-3',conv_bias=True)
-        self.enc_2 = PCBActiv(64, 128, sample='down-3',conv_bias=True)
-        self.enc_3 = PCBActiv(128, 256, sample='down-3',conv_bias=True)
-        self.enc_4 = PCBActiv(256, 512, sample='down-3',conv_bias=True)
-        self.enc_5 = PCBActiv(512, 512, chunk_size, sample='down-3-3d',conv_bias=True)
-        self.enc_6 = PCBActiv(512, 512, chunk_size, sample='down-3-3d',conv_bias=True)
+        self.enc_1 = PCBActiv(input_channels, 64, sample='down-3', conv_bias=True)
+        self.enc_2 = PCBActiv(64, 128, sample='down-3', conv_bias=True)
+        self.enc_3 = PCBActiv(128, 256, sample='down-3', conv_bias=True)
+        self.enc_4 = PCBActiv(256, 512, sample='down-3', conv_bias=True)
+        self.enc_5 = PCBActiv(512, 512, chunk_size, sample='down-3-3d', conv_bias=True)
+        self.enc_6 = PCBActiv(512, 512, chunk_size, sample='down-3-3d', conv_bias=True)
         
         ## decoders        
-        self.dec_6 = PCBActiv(512 + 512, 512, activ='relu',conv_bias=True)
-        self.dec_5 = PCBActiv(512 + 512, 512, activ='relu',conv_bias=True)
-        self.dec_4 = PCBActiv(512 + 256, 256, activ='relu',conv_bias=True)
-        self.dec_3 = PCBActiv(256 + 128, 128, activ='relu',conv_bias=True)
-        self.dec_2 = PCBActiv(128 + 64, 64, activ='relu',conv_bias=True)
+        self.dec_6 = PCBActiv(512 + 512, 512, activ='relu', conv_bias=True)
+        self.dec_5 = PCBActiv(512 + 512, 512, activ='relu', conv_bias=True)
+        self.dec_4 = PCBActiv(512 + 256, 256, activ='relu', conv_bias=True)
+        self.dec_3 = PCBActiv(256 + 128, 128, activ='relu', conv_bias=True)
+        self.dec_2 = PCBActiv(128 + 64, 64, activ='relu', conv_bias=True)
         self.dec_1 = PCBActiv(64 + input_channels, input_channels, bn=False, activ='relu', conv_bias=True)
 
     def forward(self, input, input_mask):

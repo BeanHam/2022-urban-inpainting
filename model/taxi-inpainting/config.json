@@ -1,0 +1,16 @@
+{
+    "img_root": "../../data_min_max",
+    "mask_root": "../../data_min_max",
+    "learning_rate": 0.01,
+    "learning_rate_step": 500,
+    "max_iter":20000,
+    "eval_iter": 200,
+    "batch_size": 16,
+    "chunk_sizes": [5,7,10],
+    "image_size": 64,
+    "valid_loss_weight": 1,
+    "hole_loss_weight": 12,
+    "mape_losses": [0],
+    "all_time_max": 1428,
+    "mask_types": ["random", "biased"]
+}

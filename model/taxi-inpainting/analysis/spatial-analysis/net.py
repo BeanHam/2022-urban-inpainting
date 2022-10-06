@@ -5,13 +5,26 @@ import torch.nn.functional as F
 from torchvision import models
 from torch.nn import Parameter
 
-
 ######################################################
 ############# Partial Convolution
 ######################################################
 
+## seed
+seed = 816
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+
 def weights_init(init_type='gaussian'):
+    
     def init_fun(m):
+        
+        ## seed
+        seed = 816
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        
         classname = m.__class__.__name__
         if (classname.find('Conv') == 0 or classname.find(
                 'Linear') == 0) and hasattr(m, 'weight'):
@@ -34,7 +47,14 @@ def weights_init(init_type='gaussian'):
     return init_fun
 
 class PartialConv(nn.Module):
+    
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True):
+        
+        ## seed
+        seed = 816
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
         
         super().__init__()
         self.input_conv = nn.Conv3d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias)

@@ -6,83 +6,43 @@ import json
 from utils import *
 warnings.filterwarnings("ignore")
 
-
 def main():
     
-    ################################
+    ## seed
+    seed = 816
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
     ## load parameters
-    ################################
-    parameter_path = 'parameters.json'
+    parameter_path = 'config.json'
     with open(parameter_path) as json_file:
         parameters = json.load(json_file)
-        
-    img_root = parameters['img_root']
-    mask_root = parameters['mask_root']
+    
+    ## get parameter values
     mask_types = parameters['mask_types']
-    loss_types = parameters['loss_types']
-    image_size = parameters['image_size']
     chunk_sizes = parameters['chunk_sizes']
-    batch_size = parameters['batch_size']
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     parameters['device'] = device
     
-    ################################
     ## training
-    ################################
-    
-    ## prameter-tuning
-    for chunk_size in chunk_sizes:
+    for chunk_size, mask_type in itertools.product(chunk_sizes, mask_types):
         
-        parameters['chunk_size'] = chunk_size
-        
-        ## storage 
-        all_results = []
-        print(f'================================================')
+        print(f'==============================')
         print(f'Chunk Size: {chunk_size}')
-        for mask_type, loss_type in itertools.product(mask_types, loss_types):
+        print(f'--- Mask Type: {mask_type}')
+        parameters['chunk_size'] = chunk_size
+        parameters['mask_type'] = mask_type
             
-            #############################################
-            ########## load parameters & data 
-            #############################################
-            print(f'Mask Type: {mask_type}. Loss Type: {loss_type}.')
-            parameters['mask_type'] = mask_type
-            parameters['loss_type'] = loss_type
+        ## load data
+        dataset_train, dataset_val, dataset_test_biased, dataset_test_random = load_data(parameters)
             
-            ## load images
-            train_imgs = np.load(img_root+'/train.npy')
-            val_imgs = np.load(img_root+'/val.npy')
-            test_imgs = np.load(img_root+'/test.npy')
-            
-            ## load masks
-            train_masks = np.load(mask_root+f'/train_{mask_type}_mask.npy')
-            val_masks = np.load(mask_root+f'/val_{mask_type}_mask.npy')
-            test_masks_biased = np.load(mask_root+'/test_biased_mask.npy')
-            test_masks_random = np.load(mask_root+'/test_random_mask.npy')
-            
-            ## prep datasets
-            dataset_train = taxi_data(train_imgs, train_masks, image_size, chunk_size)
-            dataset_val = taxi_data(val_imgs, val_masks, image_size, chunk_size)
-            dataset_test_biased = taxi_data(test_imgs, test_masks_biased, image_size, chunk_size)
-            dataset_test_random = taxi_data(test_imgs, test_masks_random, image_size, chunk_size)
-            iterator_train = iter(data.DataLoader(dataset_train, batch_size=batch_size, 
-                                                  sampler=InfiniteSampler(len(dataset_train), chunk_size)))
-            
-            #############################################
-            ########## training
-            #############################################        
-            if loss_type == 'l1': 
-                result = train_l1(iterator_train, dataset_val, dataset_test_biased, dataset_test_random, parameters,all_results)
-                result['mask_type'] = mask_type
-                result['loss_type'] = loss_type
-                all_results.append(result)
-            else: 
-                result = train_relative(iterator_train, dataset_val, dataset_test_biased, dataset_test_random,parameters,all_results)
-                result['mask_type'] = mask_type
-                result['loss_type'] = loss_type        
-                all_results.append(result)
-              
-        ## save results
-        process_results(all_results, chunk_size)
+        ## training
+        train(dataset_train, 
+              dataset_val, 
+              dataset_test_biased, 
+              dataset_test_random, 
+              parameters)
     
 if __name__ == '__main__':
     main()    
