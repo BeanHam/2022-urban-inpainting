@@ -15,3 +15,7 @@ A histogram of taxi pickups in Manhattan.  We adapt imagine inpainting technique
 
 - Biased Masking: detect the dense regions in the image -> randomly select a starting point from one of those dense regions -> random-walk algorithm. Biased masking will ensure the coverage of dense region, while also covering the sparse region with random-walk.
 ![alt text](https://github.com/BeanHam/urban-inpainting/blob/main/imgs/biased-masking.png)
+
+## Scenario-Based Evaluation
+- To demonstrate the applicability of our inpainting models in real-world situations, we evaluate the inpainting methods based on specific locations representing varying conditions. We tested five different scenarios to cover various spatial locations, temporal variances, and social events. The five scenarios include the masking of 5th Avenue, Penn Station, airport, lower east side, and Astoria. The masks are visualized in Figure
+![alt text](https://github.com/BeanHam/urban-inpainting/blob/main/imgs/all-scenarios.png)
