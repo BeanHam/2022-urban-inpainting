@@ -24,8 +24,15 @@ class inpaintingtLoss(nn.Module):
             l1_loss_valid = torch.mean(mask*diff*(1+mape))
         else:
             ## l1 loss on hole
+            hole_output = output[torch.where(mask==0)]
+            hole_gt = gt[torch.where(mask==0)]
+            valid_output = output[torch.where(mask==1)]
+            valid_gt = gt[torch.where(mask==1)]
             l1_loss_hole = self.l1((1-mask)*output, (1-mask)*gt)
-            l1_loss_valid = self.l1(mask*output, mask*gt)
+            l1_loss_valid = self.l1((1-mask)*output, (1-mask)*gt)
+            
+            #l1_loss_hole = self.l1((1-mask)*output, (1-mask)*gt)
+            #l1_loss_valid = self.l1(mask*output, mask*gt)
         
         return {'l1_loss_hole':l1_loss_hole, 
                 'l1_loss_valid':l1_loss_valid}

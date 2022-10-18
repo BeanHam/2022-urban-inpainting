@@ -6,14 +6,14 @@ import json
 from utils import *
 warnings.filterwarnings("ignore")
 
+## seed
+seed = 816
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+    
 def main():
     
-    ## seed
-    seed = 816
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-
     ## load parameters
     parameter_path = 'config.json'
     with open(parameter_path) as json_file:
